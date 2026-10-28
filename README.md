@@ -1,10 +1,14 @@
 # Matrix-1
 
-**Matrix-1**, yalnızca izinli ve açıkça tanımlanmış platformlarda kullanıcı adı varlığını kontrol etmek için hazırlanmış güvenli bir OSINT yardımcı aracıdır. Cyber Matrix temalı web arayüzü; tekli/çoklu sorgu, yalnızca aktif doğrulanmış sonuçlar ve TXT/JSON dışa aktarma sunar.
+**Matrix-1**, yalnızca izinli ve açıkça tanımlanmış platformlarda kullanıcı adı varlığını kontrol eden **terminal tabanlı** güvenli bir OSINT yardımcı aracıdır. Web arayüzü yoktur; GitHub kullanıcı adı, GitHub şifresi, API anahtarı veya başka bir hesap bilgisi istemez.
 
-> **Önemli:** Bu proje 30.000 siteyi agresif biçimde taramaz ve taramayı otomatik olarak genişletmez. “30.000 platform” hedefi, yalnızca yöneticinin izin verdiği katalog kayıtlarını tutan genişletilebilir şemadır. CAPTCHA aşma, proxy rotasyonu, rate-limit atlatma, gizli API kullanımı ve izinsiz hesap keşfi yoktur. Platformların şartlarına ve yerel yasalara uyun.
+> **Önemli:** Proje 30.000 siteyi agresif biçimde taramaz ve taramayı otomatik olarak genişletmez. 30.000 platform hedefi, yalnızca yöneticinin izin verdiği katalog kayıtlarını tutan genişletilebilir şemadır. CAPTCHA aşma, proxy rotasyonu, rate-limit atlatma, gizli API kullanımı ve izinsiz hesap keşfi yoktur.
 
-## Termux kurulumu (tek komut)
+## GitHub kimlik bilgisi neden isteniyordu?
+
+Önceki depo `private` olduğu için `git clone` sırasında GitHub kimliği sorulabiliyordu. Bu sürümde depo **public** olarak yayımlanmıştır. Kurulum için GitHub kullanıcı adı, şifre veya token gerekmez. GitHub CLI ile giriş yapmanız da gerekmez.
+
+## Termux kurulumu — tek komut
 
 ```sh
 pkg update -y && pkg install -y python git && git clone https://github.com/cyberorji/Matrix-1.git && cd Matrix-1 && python -m venv .venv && . .venv/bin/activate && pip install -e .
@@ -14,16 +18,16 @@ pkg update -y && pkg install -y python git && git clone https://github.com/cyber
 
 ```sh
 sudo apt update && sudo apt install -y python3 python3-venv git
- git clone https://github.com/cyberorji/Matrix-1.git
- cd Matrix-1
- python3 -m venv .venv
- . .venv/bin/activate
- pip install -e .
+git clone https://github.com/cyberorji/Matrix-1.git
+cd Matrix-1
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e .
 ```
 
 ## Windows kurulumu
 
-PowerShell'i açın:
+PowerShell'i açın. Bu komutlar GitHub hesabı istemez:
 
 ```powershell
 git clone https://github.com/cyberorji/Matrix-1.git
@@ -33,28 +37,26 @@ py -m venv .venv
 py -m pip install -e .
 ```
 
-## CLI kullanımı
+## Terminalde çalıştırma
+
+Kullanıcı adını komutta verin:
 
 ```sh
-matrix1 cybermatrix --limit 100 --out results.json --format json
-matrix1 cybermatrix --limit 100 --out results.txt --format txt
+matrix1 cybermatrix --mode multi --limit 100 --out results.json --format json
+matrix1 cybermatrix --mode single --out results.txt --format txt
 ```
 
-CLI, `data/platforms.json` içindeki `enabled=true` ve `official=true` kayıtları alır. Sonuç listesine yalnızca HTTP olarak doğrulanabilen aktif sonuçlar eklenir; ağ hataları ve pasif sonuçlar gösterilmez.
-
-## Arayüz
-
-`web/index.html` dosyasını yerel bir statik sunucuyla açabilirsiniz:
+Kullanıcı adı verilmezse araç terminalde sorar:
 
 ```sh
-python3 -m http.server 8080 --directory web
+matrix1
 ```
 
-Ardından `http://127.0.0.1:8080` adresini açın. Tarayıcı CORS veya platform politikaları nedeniyle HEAD isteklerini engelleyebilir; bu durumda CLI kullanın. Arayüz, sonuçları otomatik olarak seçtiğiniz TXT/JSON biçiminde indirir.
+`--mode single` yalnızca ilk izinli platformu, `--mode multi` katalogdaki izinli platformları kontrol eder. `--limit` en fazla kaç platform kontrol edileceğini belirler. Sonuçlara yalnızca doğrulanabilen aktif kayıtlar eklenir; pasif veya ağ hatası olan kayıtlar yazdırılmaz.
 
-## Katalog genişletme
+## Katalog
 
-Her kayıt şu alanları taşımalıdır: `name`, `url_template`, `enabled`, `official`, `category`. Sadece açıkça izin verilen ve doğrulama yöntemi platformun şartlarına uygun olan kayıtları ekleyin. Yanlış pozitifleri azaltmak için yalnızca HTTP 200'ü hesap kanıtı saymayın; mümkünse resmî API adaptörü kullanın.
+`data/platforms.json` içindeki `enabled=true` ve `official=true` kayıtları kullanılır. Her kayıt `name`, `url_template`, `enabled`, `official` ve `category` alanlarını taşımalıdır. Kataloğa yalnızca kullanım izni olan platformları ekleyin.
 
 ## Test
 
