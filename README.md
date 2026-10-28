@@ -1,20 +1,29 @@
 # Matrix-1
 
-**Matrix-1**, yalnızca izinli ve açıkça tanımlanmış platformlarda kullanıcı adı varlığını kontrol eden **terminal tabanlı** güvenli bir OSINT yardımcı aracıdır. Web arayüzü yoktur; GitHub kullanıcı adı, GitHub şifresi, API anahtarı veya başka bir hesap bilgisi istemez.
+**Matrix-1**, yalnızca açık profil URL'leri üzerinden kullanıcı adı varlığını kontrol eden, terminal tabanlı ve izinli kullanım için tasarlanmış bir OSINT yardımcı aracıdır. Web arayüzü, hesap girişi, şifre, API anahtarı, CAPTCHA aşma veya proxy rotasyonu içermez.
 
-> **Önemli:** Proje 30.000 siteyi agresif biçimde taramaz ve taramayı otomatik olarak genişletmez. 30.000 platform hedefi, yalnızca yöneticinin izin verdiği katalog kayıtlarını tutan genişletilebilir şemadır. CAPTCHA aşma, proxy rotasyonu, rate-limit atlatma, gizli API kullanımı ve izinsiz hesap keşfi yoktur.
+> **Güvenli varsayılan:** Depoda 500 harici platform kaydı bulunur. Bu kayıtlar katalogda kapalıdır ve varsayılan çalıştırmada sorgulanmaz. Harici katalog açıkça `--include-external` ile seçilmeden yüzlerce üçüncü taraf platforma istek gönderilmez.
 
-## GitHub kimlik bilgisi neden isteniyordu?
+## Neler değişti?
 
-Önceki depo `private` olduğu için `git clone` sırasında GitHub kimliği sorulabiliyordu. Bu sürümde depo **public** olarak yayımlanmıştır. Kurulum için GitHub kullanıcı adı, şifre veya token gerekmez. GitHub CLI ile giriş yapmanız da gerekmez.
+- 500 harici platform kaydı, kaynak ve lisans bilgileriyle eklendi.
+- Harici kayıtlar varsayılan olarak kapalı tutuldu.
+- HTTP durum kodu tek başına yeterli kabul edilmiyor; katalogdaki bulunan/bulunmayan işaretleri de kontrol ediliyor.
+- `found`, `not_found`, `unknown`, `blocked`, `rate_limited`, `server_error` ve `network_error` durumları ayrıştırılıyor.
+- Kontrollü eşzamanlılık, timeout ve istek öncesi bekleme desteği geldi.
+- JSON, NDJSON, CSV ve TXT çıktı biçimleri destekleniyor.
+- Kategori filtresi, platform listeleme ve tüm durumları dışa aktarma seçenekleri eklendi.
+- Katalog kayıtları URL, alan, tekrar ve HTTP kodu açısından doğrulanıyor.
 
-## Termux kurulumu — tek komut
+## Kurulum
+
+### Termux
 
 ```sh
 pkg update -y && pkg install -y python git && git clone https://github.com/cyberorji/Matrix-1.git && cd Matrix-1 && python -m venv .venv && . .venv/bin/activate && pip install -e .
 ```
 
-## Linux kurulumu
+### Linux
 
 ```sh
 sudo apt update && sudo apt install -y python3 python3-venv git
@@ -25,9 +34,7 @@ python3 -m venv .venv
 pip install -e .
 ```
 
-## Windows kurulumu
-
-PowerShell'i açın. Bu komutlar GitHub hesabı istemez:
+### Windows
 
 ```powershell
 git clone https://github.com/cyberorji/Matrix-1.git
@@ -37,51 +44,78 @@ py -m venv .venv
 py -m pip install -e .
 ```
 
-## Terminalde çalıştırma
+## Kullanım
 
-Kurulum komutu başarısız olsa bile, depoda Python 3 bulunan her üç ortamda şu doğrudan çalıştırma yöntemi kullanılabilir; `pip`, paket kurulumu veya GitHub girişi gerekmez:
+Güvenli varsayılan mod yalnızca Matrix-1 tarafından açıkça etkinleştirilmiş kayıtları kullanır:
 
 ```sh
 python run_matrix1.py cybermatrix --mode multi --limit 100 --out results.json --format json
 ```
 
-Termux/Linux'ta `python` yerine `python3`, Windows'ta `py` kullanabilirsiniz:
+Harici kaynak kataloğundaki 500 kaydı kullanmak için bunu açıkça belirtin. İlk denemelerde düşük limit ve düşük eşzamanlılık kullanın:
 
 ```sh
-python3 run_matrix1.py cybermatrix --mode single --out results.txt --format txt
+python run_matrix1.py cybermatrix --include-external --limit 25 --workers 2 --delay 1 --all-results --out results.ndjson --format ndjson
 ```
 
-```powershell
-py run_matrix1.py cybermatrix --mode multi --limit 100 --out results.json --format json
-```
-
-Kullanıcı adını komutta verin:
-
-```sh
-matrix1 cybermatrix --mode multi --limit 100 --out results.json --format json
-matrix1 cybermatrix --mode single --out results.txt --format txt
-```
-
-Kullanıcı adı verilmezse araç terminalde sorar:
+Kullanıcı adı verilmezse terminalde sorulur:
 
 ```sh
 matrix1
 ```
 
-`--mode single` yalnızca ilk izinli platformu, `--mode multi` katalogdaki izinli platformları kontrol eder. `--limit` en fazla kaç platform kontrol edileceğini belirler. Sonuçlara yalnızca doğrulanabilen aktif kayıtlar eklenir; pasif veya ağ hatası olan kayıtlar yazdırılmaz.
+Yalnızca bir kategori:
 
-Araç GitHub hesabı, GitHub şifresi veya API anahtarı istemez. GitHub yalnızca kodu indirmek için kullanılır; sorgu sırasında GitHub'a giriş yapılmaz.
+```sh
+matrix1 cybermatrix --include-external --category developer --limit 50
+```
 
-## Katalog
+Etkin kayıtları listeleme:
 
-`data/platforms.json` içindeki `enabled=true` ve `official=true` kayıtları kullanılır. Her kayıt `name`, `url_template`, `enabled`, `official` ve `category` alanlarını taşımalıdır. Kataloğa yalnızca kullanım izni olan platformları ekleyin.
+```sh
+matrix1 --include-external --list-platforms
+```
+
+Desteklenen seçenekler:
+
+- `--mode single|multi`: tek platform veya katalog sınırı.
+- `--limit N`: kontrol edilecek en fazla kayıt sayısı.
+- `--include-external`: kaynak kataloğundaki kapalı kayıtları açıkça dahil eder.
+- `--all-results`: yalnızca bulunanları değil, belirsiz ve hatalı sonuçları da yazar.
+- `--workers 1..16`: kontrollü eşzamanlı istek sayısı; varsayılan 4.
+- `--delay SECONDS`: her istek öncesi bekleme.
+- `--timeout SECONDS`: tek istek için zaman aşımı.
+- `--format json|ndjson|csv|txt`: çıktı biçimi.
+
+## Sonuçların anlamı
+
+- `found`: bulunan işareti doğrulandı.
+- `not_found`: bulunamadı işareti veya HTTP 404 doğrulandı.
+- `unknown`: sunucu yanıtı kesin karar vermeye yetmedi.
+- `blocked`: 401/403 gibi erişim kısıtı.
+- `rate_limited`: HTTP 429.
+- `server_error`: HTTP 5xx.
+- `network_error`: timeout, DNS veya bağlantı hatası.
+
+Bir platformun `200 OK` döndürmesi tek başına hesabın bulunduğunu kanıtlamaz. Bu yüzden sonuçlarda `unknown` durumu korunur ve kullanıcıya yanlış kesinlik verilmez.
+
+## Katalog ve kaynak
+
+`data/platforms.json` içindeki her kayıt `name`, `url_template`, `enabled`, `official`, `category` ve isteğe bağlı `detection` alanlarını taşıyabilir. Harici 500 kayıt, [WhatsMyName](https://github.com/WebBreacher/WhatsMyName) projesinin `wmn-data.json` verisinden dönüştürülmüştür. Bu veri CC BY-SA 4.0 lisanslıdır; Matrix-1 bu kaynağı taklit etmez veya resmi olarak temsil etmez.
+
+Harici platformlar için `enabled=false` ve `official=false` kullanılır. Bu ayrım, yeni kayıtların yanlışlıkla varsayılan taramaya girmesini önler. Platformların URL'leri ve tespit işaretleri zamanla değişebilir; sonuçlar kesin kimlik doğrulaması değildir.
 
 ## Test
 
 ```sh
+python -m pip install -e '.[test]'
 python -m pytest -q
 ```
 
+## Sorumlu kullanım
+
+Yalnızca kendinize ait hesapları veya açıkça izin aldığınız kullanıcı adlarını kontrol edin. Platformların kullanım şartlarına, rate-limit kurallarına ve bulunduğunuz yerdeki yasalara uyun. CAPTCHA aşma, proxy rotasyonu, kimlik doğrulama atlatma ve gizli API kullanımı bu projeye dahil değildir. Sonuç dosyaları sorgulanan kullanıcı adlarını içerebilir; bunları paylaşmadan önce dikkat edin.
+
 ## Lisans
 
-MIT. Bu lisans, platform şartlarını veya yürürlükteki yasaları geçersiz kılmaz.
+MIT. Harici WhatsMyName veri kayıtları ayrıca CC BY-SA 4.0 lisansına tabidir. Bu lisanslar platformların kullanım şartlarını veya yürürlükteki yasaları geçersiz kılmaz.

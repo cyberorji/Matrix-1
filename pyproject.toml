@@ -4,9 +4,27 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "matrix-1"
-version = "0.1.0"
+version = "0.2.0"
 description = "Permissioned OSINT username presence checker"
+readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+keywords = ["osint", "username", "cli", "privacy"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Environment :: Console",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.urls]
+Repository = "https://github.com/cyberorji/Matrix-1"
+Issues = "https://github.com/cyberorji/Matrix-1/issues"
 
 [project.scripts]
 matrix1 = "matrix1.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["matrix1*"]
