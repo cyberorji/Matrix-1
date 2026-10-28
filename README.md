@@ -39,6 +39,22 @@ py -m pip install -e .
 
 ## Terminalde çalıştırma
 
+Kurulum komutu başarısız olsa bile, depoda Python 3 bulunan her üç ortamda şu doğrudan çalıştırma yöntemi kullanılabilir; `pip`, paket kurulumu veya GitHub girişi gerekmez:
+
+```sh
+python run_matrix1.py cybermatrix --mode multi --limit 100 --out results.json --format json
+```
+
+Termux/Linux'ta `python` yerine `python3`, Windows'ta `py` kullanabilirsiniz:
+
+```sh
+python3 run_matrix1.py cybermatrix --mode single --out results.txt --format txt
+```
+
+```powershell
+py run_matrix1.py cybermatrix --mode multi --limit 100 --out results.json --format json
+```
+
 Kullanıcı adını komutta verin:
 
 ```sh
@@ -53,6 +69,8 @@ matrix1
 ```
 
 `--mode single` yalnızca ilk izinli platformu, `--mode multi` katalogdaki izinli platformları kontrol eder. `--limit` en fazla kaç platform kontrol edileceğini belirler. Sonuçlara yalnızca doğrulanabilen aktif kayıtlar eklenir; pasif veya ağ hatası olan kayıtlar yazdırılmaz.
+
+Araç GitHub hesabı, GitHub şifresi veya API anahtarı istemez. GitHub yalnızca kodu indirmek için kullanılır; sorgu sırasında GitHub'a giriş yapılmaz.
 
 ## Katalog
 
