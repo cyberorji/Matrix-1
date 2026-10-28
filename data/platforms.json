@@ -1,0 +1,5 @@
+[
+  {"name":"GitHub","url_template":"https://github.com/{username}","enabled":true,"official":true,"category":"developer"},
+  {"name":"GitLab","url_template":"https://gitlab.com/{username}","enabled":true,"official":true,"category":"developer"},
+  {"name":"Mastodon (örnek sunucu)","url_template":"https://mastodon.social/@{username}","enabled":true,"official":true,"category":"social"}
+]
